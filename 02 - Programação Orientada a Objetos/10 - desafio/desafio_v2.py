@@ -189,5 +189,142 @@ def recuperar_conta_cliente(cliente):
     for i, conta in enumerate(cliente.contas, start=1):
         print(f"[{i}] Agência: {conta.agencia} - Número: {conta.numero}")
 
+    try:
+        indice = int(input("Informe o número da opção: ")) - 1
+        return cliente.contas[indice]
+    except (ValueError, IndexError):
+        print("\n@@@ Opção inválida! @@@")
+        return None
+
+
+def depositar(clientes):
+    cpf = input("Informe o CPF do cliente: ")
+    cliente = filtrar_cliente(cpf, clientes)
+    if not cliente:
+        print("\n@@@ Cliente não encontrado! @@@")
+        return
+
+    try:
+        valor = float(input("Informe o valor do depósito: "))
+    except ValueError:
+        print("\n@@@ Valor inválido! @@@")
+        return
+
+    conta = recuperar_conta_cliente(cliente)
+    if conta:
+        cliente.realizar_transacao(conta, Deposito(valor))
+
+
+def sacar(clientes):
+    cpf = input("Informe o CPF do cliente: ")
+    cliente = filtrar_cliente(cpf, clientes)
+    if not cliente:
+        print("\n@@@ Cliente não encontrado! @@@")
+        return
+
+    try:
+        valor = float(input("Informe o valor do saque: "))
+    except ValueError:
+        print("\n@@@ Valor inválido! @@@")
+        return
+
+    conta = recuperar_conta_cliente(cliente)
+    if conta:
+        cliente.realizar_transacao(conta, Saque(valor))
+
+
+def exibir_extrato(clientes):
+    cpf = input("Informe o CPF do cliente: ")
+    cliente = filtrar_cliente(cpf, clientes)
+    if not cliente:
+        print("\n@@@ Cliente não encontrado! @@@")
+        return
+
+    conta = recuperar_conta_cliente(cliente)
+    if not conta:
+        return
+
+    print("\n================ EXTRATO ================")
+    if not conta.historico.transacoes:
+        print("Não foram realizadas movimentações.")
+    else:
+        for t in conta.historico.transacoes:
+            print(f"{t['data']} - {t['tipo']}: R$ {t['valor']:.2f}")
+
+    print(f"\nSaldo:\n\tR$ {conta.saldo:.2f}")
+    print("==========================================")
+
+
+def criar_cliente(clientes):
+    cpf = input("Informe o CPF (somente números): ")
+    if not cpf.isdigit():
+        print("\n@@@ CPF inválido! @@@")
+        return
+
+    if filtrar_cliente(cpf, clientes):
+        print("\n@@@ Já existe cliente com esse CPF! @@@")
+        return
+
+    nome = input("Informe o nome completo: ")
+    data_nascimento = input("Informe a data de nascimento (dd-mm-aaaa): ")
+    endereco = input("Informe o endereço: ")
+
+    clientes.append(PessoaFisica(nome, data_nascimento, cpf, endereco))
+    print("\n=== Cliente criado com sucesso! ===")
+
+
+def criar_conta(numero_conta, clientes, contas):
+    cpf = input("Informe o CPF do cliente: ")
+    cliente = filtrar_cliente(cpf, clientes)
+    if not cliente:
+        print("\n@@@ Cliente não encontrado! @@@")
+        return
+
+    conta = ContaCorrente.nova_conta(cliente, numero_conta)
+    contas.append(conta)
+    cliente.adicionar_conta(conta)
+    print("\n=== Conta criada com sucesso! ===")
+
+
+def listar_contas(contas):
+    if not contas:
+        print("\n@@@ Nenhuma conta cadastrada! @@@")
+        return
+
+    for conta in contas:
+        print("=" * 50)
+        print(textwrap.dedent(str(conta)))
+
+
+def main():
+    clientes = []
+    contas = []
+
+    while True:
+        opcao = menu()
+
+        if opcao == "d":
+            depositar(clientes)
+        elif opcao == "s":
+            sacar(clientes)
+        elif opcao == "e":
+            exibir_extrato(clientes)
+        elif opcao == "nu":
+            criar_cliente(clientes)
+        elif opcao == "nc":
+            numero_conta = len(contas) + 1
+            criar_conta(numero_conta, clientes, contas)
+        elif opcao == "lc":
+            listar_contas(contas)
+       elif opcao == "q":
+            print("\n=== Obrigado por usar nosso sistema bancário! ===")
+            break
+        else:
+            print("\n@@@ Operação inválida, por favor selecione novamente. @@@")
+
+
+if __name__ == "__main__":
+    main()
+
 
 
