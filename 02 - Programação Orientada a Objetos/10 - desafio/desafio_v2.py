@@ -316,7 +316,7 @@ def main():
             criar_conta(numero_conta, clientes, contas)
         elif opcao == "lc":
             listar_contas(contas)
-       elif opcao == "q":
+        elif opcao == "q":
             print("\n=== Obrigado por usar nosso sistema bancário! ===")
             break
         else:
