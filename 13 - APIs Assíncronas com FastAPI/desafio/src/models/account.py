@@ -1,12 +1,31 @@
-import sqlalchemy as sa
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Enum
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
-from src.database import metadata
-
-accounts = sa.Table(
-    "accounts",
-    metadata,
-    sa.Column("id", sa.Integer, primary_key=True),
-    sa.Column("user_id", sa.Integer, nullable=False, index=True),
-    sa.Column("balance", sa.Numeric(10, 2), nullable=False, default=0),
-    sa.Column("created_at", sa.TIMESTAMP(timezone=True), default=sa.func.now()),
-)
+ 
+ 
+class User(Base):
+    __tablename__ = "users"
+ 
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+ 
+    accounts = relationship("Account", back_populates="owner")
+ 
+ 
+class Account(Base):
+    __tablename__ = "accounts"
+ 
+    id = Column(Integer, primary_key=True, index=True)
+    number = Column(String, unique=True, index=True, nullable=False)
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    balance = Column(Float, default=0.0, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+ 
+    owner = relationship("User", back_populates="accounts")
+    transactions = relationship("Transaction", back_populates="account")
+ 
+ 
